@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SQL Injection Simulator</title>
+    <style>
+        body { font-family: 'Segoe UI', monospace; background: #121212; color: white; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        .header { text-align: center; padding: 15px; background: #1a1a1a; border-bottom: 1px solid #333; position: relative; }
+        .header h1 { margin: 0; font-size: 1.4rem; color: #ccc; }
+        
+        .reset-btn { position: absolute; right: 20px; top: 15px; background: #444; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; text-decoration: none; }
+        .reset-btn:hover { background: #666; }
+
+        .main-content { display: flex; flex: 1; }
+        .split { flex: 1; padding: 20px 40px; display: flex; flex-direction: column; align-items: center; }
+        
+        .left { background: #2b1515; border-right: 1px solid #333; }
+        .left h2 { color: #ff5555; }
+        .right { background: #152b1f; }
+        .right h2 { color: #00e676; }
+
+        form { background: rgba(0,0,0,0.3); padding: 25px; border-radius: 10px; width: 320px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        input { width: 90%; padding: 10px; margin: 8px 0; background: #333; border: 1px solid #555; color: white; border-radius: 5px; font-family: monospace; }
+        button.submit-btn { width: 100%; padding: 10px; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; font-size: 1rem; }
+        
+        .left .submit-btn { background: #ff5555; } .left .submit-btn:hover { background: #cc0000; }
+        .right .submit-btn { background: #00e676; color: black; } .right .submit-btn:hover { background: #00b359; }
+
+        /* Quick Attack Buttons */
+        .quick-actions { margin-bottom: 15px; display: flex; gap: 5px; width: 320px; justify-content: center; }
+        .quick-btn { background: #555; border: none; color: #fff; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 3px; opacity: 0.8; transition: 0.2s; }
+        .quick-btn:hover { opacity: 1; transform: translateY(-1px); }
+        .quick-btn.red:hover { background: #ff5555; }
+
+        .result-box { margin-top: 20px; padding: 15px; background: #000; border-radius: 5px; width: 320px; min-height: 80px; font-size: 0.9rem; border: 1px solid #444; }
+        .code { font-family: 'Courier New', monospace; color: #aaa; margin-top: 5px; font-size: 0.8rem; word-break: break-all; background: #111; padding: 8px; border-radius: 3px; }
+        
+        /* Audit Log Section */
+        .audit-section { background: #111; padding: 20px; border-top: 2px solid #333; }
+        .audit-section h3 { margin-top: 0; color: #888; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; color: #ddd; }
+        th { text-align: left; border-bottom: 1px solid #444; padding: 8px; color: #666; }
+        td { padding: 8px; border-bottom: 1px solid #222; font-family: monospace; }
+        .status-success { color: #00e676; font-weight: bold; }
+        .status-failed { color: #ff5555; }
+        .status-blocked { color: #00e676; }
+    </style>
+    
+    <script>
+        function fillPayload(targetFormId, payload, pass='secret123') {
+            document.querySelector(`#${targetFormId} input[name="username"]`).value = payload;
+            document.querySelector(`#${targetFormId} input[name="password"]`).value = pass;
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>🛡️ SQL Injection Simulator</h1>
+        <a href="/reset" class="reset-btn">🔄 Reset System</a>
+    </div>
+
+    <div class="main-content">
+        <div class="split left">
+            <h2>🔓 VULNERABLE</h2>
+            
+            <div class="quick-actions">
+                <button class="quick-btn red" onclick="fillPayload('vuln-form', `admin' OR '1'='1`)">1. Bypass</button>
+                <button class="quick-btn red" onclick="fillPayload('vuln-form', `admin' --`)">2. Comment</button>
+                <button class="quick-btn red" onclick="fillPayload('vuln-form', `' UNION SELECT 1,'HACKED','1' --`)">3. UNION</button>
+            </div>
+
+            <form id="vuln-form" action="/login_vulnerable" method="POST">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="text" name="password" placeholder="Password" required>
+                <button type="submit" class="submit-btn">Login (Unsafe)</button>
+            </form>
+
+            {% if v_result %}
+            <div class="result-box" style="border-left: 5px solid {{ '#00e676' if v_status == 'success' else '#ff5555' }}">
+                <strong>Result:</strong> {{ v_result }}
+                {% if v_query %}<div class="code">{{ v_query }}</div>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="split right">
+            <h2>🔒 SECURE</h2>
+            
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="fillPayload('sec-form', `admin`)">Correct User</button>
+                <button class="quick-btn" onclick="fillPayload('sec-form', `admin' OR '1'='1`)">Try Bypass</button>
+            </div>
+
+            <form id="sec-form" action="/login_secure" method="POST">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="text" name="password" placeholder="Password" required>
+                <button type="submit" class="submit-btn">Login (Safe)</button>
+            </form>
+
+            {% if s_result %}
+            <div class="result-box" style="border-left: 5px solid {{ '#00e676' if s_status == 'success' else '#ff5555' }}">
+                <strong>Result:</strong> {{ s_result }}
+                {% if s_query %}<div class="code">{{ s_query }}</div>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="audit-section">
+        <h3>📋 Live Security Audit Log</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Time</th>
+                    <th style="width: 100px;">Method</th>
+                    <th>Input Payload</th>
+                    <th style="width: 100px;">Status</th>
+                    <th>Query Snippet</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in history %}
+                <tr>
+                    <td>{{ log[1] }}</td>
+                    <td style="color: {{ '#ff5555' if log[2] == 'VULNERABLE' else '#00e676' }}">{{ log[2] }}</td>
+                    <td>{{ log[3] }}</td>
+                    <td class="{{ 'status-success' if log[4] == 'SUCCESS' else ('status-blocked' if log[4] == 'BLOCKED' else 'status-failed') }}">
+                        {{ log[4] }}
+                    </td>
+                    <td style="color: #666; font-size: 0.8rem;">{{ log[5][:60] }}...</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
