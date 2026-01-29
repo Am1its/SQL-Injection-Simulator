@@ -64,6 +64,8 @@ Injecting a tautology bypasses the password check instantly.
 <img src="./screenshots/sqli_attack2.png" alt="SQLi Success" width="800">
 <img src="./screenshots/sqli_attack3.png" alt="SQLi Success" width="800">
 <img src="./screenshots/sqli_attack4.png" alt="SQLi Success" width="800">
+<img src="./screenshots/sqli_attack5.png" alt="SQLi Success" width="800">
+
 
 
 </details>
