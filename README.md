@@ -34,12 +34,12 @@ SQL_Injection_Simulator/
 ## ⚙️ Installation & Usage
 Install Dependencies:
 
-Bash
 pip install -r requirements.txt
+
 Run the Server:
 
-Bash
 python app.py
+
 Access the dashboard at http://127.0.0.1:5000
 
 ## ⚔️ Attack Scenarios
