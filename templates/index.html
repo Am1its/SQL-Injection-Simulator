@@ -26,10 +26,11 @@
         .right .submit-btn { background: #00e676; color: black; } .right .submit-btn:hover { background: #00b359; }
 
         /* Quick Attack Buttons */
-        .quick-actions { margin-bottom: 15px; display: flex; gap: 5px; width: 320px; justify-content: center; }
-        .quick-btn { background: #555; border: none; color: #fff; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 3px; opacity: 0.8; transition: 0.2s; }
+        .quick-actions { margin-bottom: 15px; display: flex; gap: 5px; width: 340px; justify-content: center; flex-wrap: wrap; }
+        .quick-btn { background: #555; border: none; color: #fff; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 3px; opacity: 0.8; transition: 0.2s; flex: 1; min-width: 80px; }
         .quick-btn:hover { opacity: 1; transform: translateY(-1px); }
         .quick-btn.red:hover { background: #ff5555; }
+        .quick-btn.green:hover { background: #00e676; color: black; }
 
         .result-box { margin-top: 20px; padding: 15px; background: #000; border-radius: 5px; width: 320px; min-height: 80px; font-size: 0.9rem; border: 1px solid #444; }
         .code { font-family: 'Courier New', monospace; color: #aaa; margin-top: 5px; font-size: 0.8rem; word-break: break-all; background: #111; padding: 8px; border-radius: 3px; }
@@ -46,7 +47,7 @@
     </style>
     
     <script>
-        function fillPayload(targetFormId, payload, pass='secret123') {
+        function fillPayload(targetFormId, payload, pass) {
             document.querySelector(`#${targetFormId} input[name="username"]`).value = payload;
             document.querySelector(`#${targetFormId} input[name="password"]`).value = pass;
         }
@@ -54,18 +55,18 @@
 </head>
 <body>
     <div class="header">
-        <h1>🛡️ SQL Injection Simulator</h1>
+        <h1>💉 SQL Injection Simulator</h1>
         <a href="/reset" class="reset-btn">🔄 Reset System</a>
     </div>
 
     <div class="main-content">
         <div class="split left">
-            <h2>🔓 VULNERABLE</h2>
+            <h2>🔴 VULNERABLE</h2>
             
             <div class="quick-actions">
-                <button class="quick-btn red" onclick="fillPayload('vuln-form', `admin' OR '1'='1`)">1. Bypass</button>
-                <button class="quick-btn red" onclick="fillPayload('vuln-form', `admin' --`)">2. Comment</button>
-                <button class="quick-btn red" onclick="fillPayload('vuln-form', `' UNION SELECT 1,'HACKED','1' --`)">3. UNION</button>
+                <button class="quick-btn red" onclick="fillPayload('vuln-form', `admin' OR '1'='1`, 'ALWAYS_TRUE')">1. Bypass</button>
+                <button class="quick-btn red" onclick="fillPayload('vuln-form', `admin' --`, 'IGNORED_COMMENT')">2. Comment</button>
+                <button class="quick-btn red" onclick="fillPayload('vuln-form', `' UNION SELECT 1,'HACKED','1' --`, 'hacked')">3. UNION</button>
             </div>
 
             <form id="vuln-form" action="/login_vulnerable" method="POST">
@@ -83,11 +84,16 @@
         </div>
 
         <div class="split right">
-            <h2>🔒 SECURE</h2>
+            <h2>🟢 SECURE</h2>
             
             <div class="quick-actions">
-                <button class="quick-btn" onclick="fillPayload('sec-form', `admin`)">Correct User</button>
-                <button class="quick-btn" onclick="fillPayload('sec-form', `admin' OR '1'='1`)">Try Bypass</button>
+                <button class="quick-btn green" onclick="fillPayload('sec-form', 'admin', 'secret123')">Login: Admin</button>
+                <button class="quick-btn green" onclick="fillPayload('sec-form', 'alice', 'wonderland')">Login: Alice</button>
+                <button class="quick-btn green" onclick="fillPayload('sec-form', 'bob', 'builder')">Login: Bob</button>
+            </div>
+            
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="fillPayload('sec-form', `admin' OR '1'='1`, 'ATTEMPT_FAIL')">Try Attack</button>
             </div>
 
             <form id="sec-form" action="/login_secure" method="POST">
